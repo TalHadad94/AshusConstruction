@@ -10,7 +10,7 @@
   // window.dataLayer = window.dataLayer || [];
 
   var WHATSAPP_NUMBER = "972549805021";
-  var DEFAULT_WHATSAPP_TEXT = "שלום, הגעתי מהאתר ואשמח לייעוץ ראשוני";
+  var DEFAULT_WHATSAPP_TEXT = "שלום, מעוניין/ת בייעוץ ראשוני ללא עלות לפרויקט ממ״ד";
 
   /**
    * Log tracking events. Replace console.log with dataLayer.push for GTM.
@@ -82,7 +82,7 @@
       }
 
       var lines = [
-        "שלום, פנייה מהאתר — עשוש בניה",
+        "שלום, פנייה מהאתר לייעוץ ראשוני (ממ״ד) — עשוש בניה",
         "",
         "שם: " + name,
         "טלפון: " + phone,
