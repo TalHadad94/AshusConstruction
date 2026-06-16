@@ -1,32 +1,50 @@
 /**
  * רון ירון אשוש 26 בע"מ — landing page scripts
- * Tracking hooks ready for Google Tag Manager (dataLayer push can be added here).
+ * Tracking is ready for Google Tag Manager, GA4, and Google Ads conversion setup.
  */
 
 (function () {
   "use strict";
 
-  // Google Tag Manager — dataLayer initialization (uncomment when GTM is installed)
-  // window.dataLayer = window.dataLayer || [];
+  window.dataLayer = window.dataLayer || [];
 
   var WHATSAPP_NUMBER = "972559624803";
-  var DEFAULT_WHATSAPP_TEXT = "שלום, מעוניין/ת בייעוץ ראשוני ללא עלות לפרויקט ממ״ד";
 
   /**
-   * Log tracking events. Replace console.log with dataLayer.push for GTM.
+   * Push a normalized event to GTM dataLayer and GA4 gtag when available.
+   * In Google Tag Manager, create Custom Event triggers for:
+   * - phone-click
+   * - whatsapp-click
+   * - form-whatsapp-submit
+   *
    * @param {string} eventName - value from data-track attribute
    * @param {Object} [detail] - optional extra context
    */
   function trackEvent(eventName, detail) {
-    var payload = { event: eventName, timestamp: new Date().toISOString() };
-    if (detail) {
-      Object.assign(payload, detail);
-    }
-    console.log("[track]", payload);
+    if (!eventName) return;
 
-    // Google Tag Manager — example:
-    // window.dataLayer = window.dataLayer || [];
-    // window.dataLayer.push(payload);
+    var payload = {
+      event: eventName,
+      event_category: "lead",
+      event_label: detail && detail.label ? detail.label : undefined,
+      timestamp: new Date().toISOString(),
+    };
+
+    if (detail) {
+      Object.keys(detail).forEach(function (key) {
+        if (detail[key] !== undefined && detail[key] !== null && detail[key] !== "") {
+          payload[key] = detail[key];
+        }
+      });
+    }
+
+    window.dataLayer.push(payload);
+
+    if (typeof window.gtag === "function") {
+      window.gtag("event", eventName, payload);
+    }
+
+    console.log("[track]", payload);
   }
 
   /**
@@ -36,13 +54,18 @@
     document.addEventListener("click", function (e) {
       var el = e.target.closest("[data-track]");
       if (!el) return;
+
       var trackName = el.getAttribute("data-track");
       if (!trackName) return;
-      /* Form submit is tracked after validation in initLeadForm */
+
+      // Form submit is tracked only after validation inside initLeadForm().
       if (trackName === "form-whatsapp-submit") return;
+
       trackEvent(trackName, {
+        label: el.getAttribute("data-track-label") || el.textContent.trim(),
         element: el.tagName.toLowerCase(),
         href: el.getAttribute("href") || undefined,
+        page_path: window.location.pathname,
       });
     });
   }
@@ -88,17 +111,17 @@
         "טלפון: " + phone,
         "עיר: " + city,
       ];
+
       if (message) {
         lines.push("הודעה: " + message);
       }
 
-      var submitBtn = form.querySelector('[data-track="form-whatsapp-submit"]');
-      if (submitBtn) {
-        trackEvent("form-whatsapp-submit", {
-          city: city,
-          hasMessage: Boolean(message),
-        });
-      }
+      trackEvent("form-whatsapp-submit", {
+        label: "lead-form",
+        city: city,
+        has_message: Boolean(message),
+        page_path: window.location.pathname,
+      });
 
       window.open(buildWhatsAppUrl(lines.join("\n")), "_blank", "noopener,noreferrer");
     });
