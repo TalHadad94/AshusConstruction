@@ -1,5 +1,5 @@
 /**
- * עשוש בניה — landing page scripts
+ * רון ירון אשוש 26 בע"מ — landing page scripts
  * Tracking hooks ready for Google Tag Manager (dataLayer push can be added here).
  */
 
@@ -9,7 +9,7 @@
   // Google Tag Manager — dataLayer initialization (uncomment when GTM is installed)
   // window.dataLayer = window.dataLayer || [];
 
-  var WHATSAPP_NUMBER = "972549805021";
+  var WHATSAPP_NUMBER = "972559624803";
   var DEFAULT_WHATSAPP_TEXT = "שלום, מעוניין/ת בייעוץ ראשוני ללא עלות לפרויקט ממ״ד";
 
   /**
@@ -82,7 +82,7 @@
       }
 
       var lines = [
-        "שלום, פנייה מהאתר לייעוץ ראשוני (ממ״ד) — עשוש בניה",
+        "שלום, פנייה מהאתר לייעוץ ראשוני (ממ״ד) — רון ירון אשוש 26 בע\"מ",
         "",
         "שם: " + name,
         "טלפון: " + phone,

@@ -1,4 +1,4 @@
-/* עשוש בניה — landing page. Mobile-first, RTL. */
+/* רון ירון אשוש 26 בע"מ — landing page. Mobile-first, RTL. */
 
 :root {
   --color-bg: #f6f7f9;
@@ -414,6 +414,16 @@ textarea:focus-visible {
   text-align: center;
   font-size: 0.9rem;
   color: var(--color-muted);
+}
+
+.footer-logo {
+  display: block;
+  width: auto;
+  max-width: min(8rem, 45vw);
+  height: auto;
+  max-height: 7rem;
+  margin: 0 auto var(--space-md);
+  object-fit: contain;
 }
 
 .footer-brand {
