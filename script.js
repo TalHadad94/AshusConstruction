@@ -134,10 +134,57 @@
     }
   }
 
+  /**
+   * Simple lightbox for the project gallery thumbnails.
+   */
+  function initGallery() {
+    var lightbox = document.getElementById("lightbox");
+    var lightboxImg = document.getElementById("lightbox-img");
+    var closeBtn = document.getElementById("lightbox-close");
+    var items = document.querySelectorAll(".gallery-item");
+    if (!lightbox || !lightboxImg || !closeBtn || !items.length) return;
+
+    var lastFocused = null;
+
+    function openLightbox(src, alt) {
+      lastFocused = document.activeElement;
+      lightboxImg.src = src;
+      lightboxImg.alt = alt || "";
+      lightbox.hidden = false;
+      closeBtn.focus();
+      document.addEventListener("keydown", onKeydown);
+    }
+
+    function closeLightbox() {
+      lightbox.hidden = true;
+      lightboxImg.src = "";
+      document.removeEventListener("keydown", onKeydown);
+      if (lastFocused && typeof lastFocused.focus === "function") {
+        lastFocused.focus();
+      }
+    }
+
+    function onKeydown(e) {
+      if (e.key === "Escape") closeLightbox();
+    }
+
+    items.forEach(function (item) {
+      item.addEventListener("click", function () {
+        openLightbox(item.getAttribute("data-lightbox-src"), item.getAttribute("data-lightbox-alt"));
+      });
+    });
+
+    closeBtn.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", function (e) {
+      if (e.target === lightbox) closeLightbox();
+    });
+  }
+
   function init() {
     initClickTracking();
     initLeadForm();
     initYear();
+    initGallery();
   }
 
   if (document.readyState === "loading") {
