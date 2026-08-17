@@ -101,6 +101,15 @@
 
       if (!name || !phone || !city) {
         form.reportValidity();
+        var firstInvalid = form.querySelector(':invalid');
+        if (firstInvalid) {
+          firstInvalid.classList.add('invalid-shake');
+          firstInvalid.addEventListener('animationend', function onEnd() {
+            firstInvalid.classList.remove('invalid-shake');
+            firstInvalid.removeEventListener('animationend', onEnd);
+          }, { once: true });
+          try { firstInvalid.focus({ preventScroll: true }); } catch (err) {}
+        }
         return;
       }
 
@@ -125,6 +134,146 @@
 
       window.open(buildWhatsAppUrl(lines.join("\n")), "_blank", "noopener,noreferrer");
     });
+  }
+
+  /**
+   * Scroll-reveal: apply to each <section> using IntersectionObserver.
+   * Respects prefers-reduced-motion.
+   */
+  function initScrollReveal() {
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var sections = document.querySelectorAll('section');
+    if (!sections || !sections.length) return;
+
+    if (reduced) {
+      sections.forEach(function (s) { s.classList.add('revealed'); });
+      return;
+    }
+
+    sections.forEach(function (s) { s.classList.add('reveal'); });
+
+    var io = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    sections.forEach(function (s) { io.observe(s); });
+  }
+
+  /**
+   * Lazy-load Instagram embed script when any .video-section enters viewport.
+   */
+  function initInstagramLazyLoad() {
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+    if (window.instgrm) return; // already loaded
+
+    var sections = document.querySelectorAll('.video-section');
+    if (!sections || !sections.length) return;
+
+    var loaded = false;
+    var io = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && !loaded) {
+          loaded = true;
+          var s = document.createElement('script');
+          s.src = 'https://www.instagram.com/embed.js';
+          s.async = true;
+          s.onload = function () {
+            try {
+              if (window.instgrm && window.instgrm.Embeds && typeof window.instgrm.Embeds.process === 'function') {
+                window.instgrm.Embeds.process();
+              }
+            } catch (err) { /* ignore */ }
+          };
+          document.body.appendChild(s);
+          obs.disconnect();
+        }
+      });
+    }, { rootMargin: '200px', threshold: 0.15 });
+
+    sections.forEach(function (s) { io.observe(s); });
+  }
+
+  /**
+   * Trust-stats: simple count-up on scroll for elements with .stat-value[data-target]
+   */
+  function initTrustStats() {
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+
+    var container = document.querySelector('.trust-stats');
+    if (!container) return;
+
+    var values = container.querySelectorAll('.stat-value');
+    if (!values || !values.length) return;
+
+    var started = false;
+    var io = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && !started) {
+          started = true;
+          values.forEach(function (el) {
+            var to = parseInt(el.getAttribute('data-target') || '0', 10) || 0;
+            animateCount(el, to, 250);
+          });
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.25 });
+
+    io.observe(container);
+
+    function animateCount(node, to, duration) {
+      if (to <= 0) { node.textContent = String(to); return; }
+      var start = performance.now();
+      var from = 0;
+      function step(now) {
+        var t = Math.min(1, (now - start) / duration);
+        var val = Math.floor(from + (to - from) * t);
+        node.textContent = val.toLocaleString('he-IL');
+        if (t < 1) requestAnimationFrame(step);
+        else node.textContent = to.toLocaleString('he-IL');
+      }
+      requestAnimationFrame(step);
+    }
+  }
+
+  /**
+   * Gallery: placeholder while images load and entrance stagger
+   */
+  function initGalleryEnhancements() {
+    var items = Array.prototype.slice.call(document.querySelectorAll('.gallery-item'));
+    if (!items.length) return;
+    items.forEach(function (item, i) {
+      item.style.setProperty('--stagger-delay', (i * 60) + 'ms');
+      var img = item.querySelector('img');
+      if (!img) return;
+      if (img.complete) img.classList.add('img-loaded');
+      else img.addEventListener('load', function () { img.classList.add('img-loaded'); });
+      img.addEventListener('error', function () { img.classList.add('img-loaded'); });
+    });
+  }
+
+  /**
+   * Form: ensure invalid fields get a subtle shake when submit fails
+   */
+  function initFormValidationEnhancements() {
+    var form = document.getElementById('lead-form');
+    if (!form) return;
+    form.addEventListener('invalid', function (e) {
+      var t = e.target;
+      if (!t) return;
+      t.classList.add('invalid-shake');
+      t.addEventListener('animationend', function onEnd() {
+        t.classList.remove('invalid-shake');
+        t.removeEventListener('animationend', onEnd);
+      }, { once: true });
+    }, true);
   }
 
   function initYear() {
@@ -185,6 +334,11 @@
     initLeadForm();
     initYear();
     initGallery();
+    initScrollReveal();
+    initInstagramLazyLoad();
+    initTrustStats();
+    initGalleryEnhancements();
+    initFormValidationEnhancements();
   }
 
   if (document.readyState === "loading") {
