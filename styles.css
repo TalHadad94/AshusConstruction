@@ -744,7 +744,7 @@ textarea:focus-visible {
 
 /* Trust stats */
 .trust-stats {
-  display: flex;
+  display: none;
   gap: var(--space-md);
   margin-top: var(--space-md);
   align-items: center;
